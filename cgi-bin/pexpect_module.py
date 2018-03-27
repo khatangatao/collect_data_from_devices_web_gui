@@ -9,8 +9,12 @@ import re
 import sqlite3
 import datetime
 import argparse
+import html
 
+# для целей тестирования создаем куки
+print("Set-cookie: name=value; expires=Wed May 18 03:33:20 2033; path=/cgi-bin/")
 
+# Выводим служебную информацию о странице и ее заголовок
 print('Content-type: text/html\n')
 
 print("""<!DOCTYPE HTML>
@@ -22,8 +26,17 @@ print("""<!DOCTYPE HTML>
         <body>""")
 
 
-# todo непонятная инструкция. разобраться
-# sys.path.insert(0, os.getcwd())
+# при запуске CGI-сценарий добавляет
+# путь к текущему рабочему каталогу (os.getcwd) в путь поиска модулей
+# sys.path. Не изменяя переменную окружения PYTHONPATH, этот прием по-
+# зволит модулю pickle и самому сценарию импортировать модуль person,
+# находящийся в том же каталоге, что и сценарий. Из-за нового способа
+# запуска CGI-сценариев, реализованного в  Python 3, текущий рабочий
+# каталог не добавляется в список sys.path автоматически, хотя при этом
+# файлы хранилища, находящиеся там, будут обнаруживаться и откры-
+# ваться корректно. Эта особенность в поведении может отличаться, в за-
+# висимости от выбранного веб-сервера.
+sys.path.insert(0, os.getcwd())
 
 # Главный шаблон вывода
 replyhtml = """
@@ -60,6 +73,7 @@ def save_data_in_database(address, command_output,
     else:
         print("""БД не существует. Перед добавлением данных ее сначала 
               нужно создать """)
+        print(os.getcwd())
         sys.exit()
 
 
@@ -287,7 +301,21 @@ def collect_data_from_devices_vpn(parameters):
 
 # парсинг данных формы
 form = cgi.FieldStorage()
-parameters = [form['username'].value, form['password'].value, [form['address'].value], form['port'].value]
+
+# todo обрати внимание на методы
+# FieldStorage.getlist(name) - возвращает список значений, связанных с именем поля формы.
+# FieldStorage.getfirst(name, default=None) - всегда возвращает только одно значение, связанное с именем поля формы.
+# Метод возвращает только первое значение в том случае, если нехороший пользователь послал более одного значения.
+
+# экранируем спецсимволы, переданные пользователем
+username = html.escape(form['username'].value)
+password = html.escape(form['password'].value)
+ip_addresses =[html.escape(form['address'].value)]
+port = html.escape(form['port'].value)
+
+
+parameters = [username, password, ip_addresses, port]
+# parameters = [form['username'].value, form['password'].value, [form['address'].value], form['port'].value]
 collect_data_from_devices(parameters)
 
 
