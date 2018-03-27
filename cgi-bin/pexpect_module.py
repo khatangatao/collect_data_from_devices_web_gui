@@ -2,14 +2,29 @@
 # -*- coding: utf-8 -*-
 #скрипт для сбора конфигурации с микротиков при помощи pexpect
 
+import cgi, sys, os
 import getpass
 import pexpect
-import sys
 import re
-import os
 import sqlite3
 import datetime
 import argparse
+
+
+
+
+# todo непонятная инструкция. разобраться
+sys.path.insert(0, os.getcwd())
+
+# Главный шаблон вывода
+replyhtml = """
+<html>
+<title>Collect data from devices</title>
+<body>
+<p> Процесс произошел. Надо проверять"</p>
+</body></html>
+"""
+
 
 
 def save_data_in_database(address, command_output, 
@@ -65,6 +80,7 @@ def configuration_parse(data):
     """Выделяем mac адрес устройства"""
     match = None
     for line in data.split('\n'):
+
         match = re.search('((\S\S:){5}\S\S)', line)
         if match:
             match = match.group()
@@ -189,64 +205,88 @@ def collect_data_from_devices_vpn(parameters):
             # ---------------------------------------------------------
     
 
-def auth(args):
-    """Функция авторизации. Возвращает набор параметров для подключения"""
-    ip_addresses = []
-    if args.vpn_gateway == 'notvpn':
-        print('Целевые устройства доступны напрямую')
-        # Запрашиваем у пользователя данные для авторизации 
-        print('Введите учетные данные для авторизации на устройствах:')
-        username = input('Username: ')
-        password = getpass.getpass()
-        port = input('Port: ')
+# def auth(args):
+#     """Функция авторизации. Возвращает набор параметров для подключения"""
+#     ip_addresses = []
+#     if args.vpn_gateway == 'notvpn':
+#         print('Целевые устройства доступны напрямую')
+#         # Запрашиваем у пользователя данные для авторизации
+#         print('Введите учетные данные для авторизации на устройствах:')
+#         username = input('Username: ')
+#         password = getpass.getpass()
+#         port = input('Port: ')
+#
+#         if os.path.isfile(args.destination):
+#             with open(args.destination, 'r') as f:
+#                 ip_addresses = f.read().split('\n')
+#                 print(ip_addresses)
+#         else:
+#             ip_addresses.append(args.destination)
+#
+#         result = [username, password, ip_addresses, port]
+#
+#         return (result)
+#
+#     else:
+#         print('Целевые устройства находятся в VPN')
+#
+#         print('Введите учетные данные для авторизации на шлюзе VPN:')
+#         username_vpn = input('Username: ')
+#         password_vpn = getpass.getpass()
+#
+#         print('Введите учетные данные для авторизации на устройствах:')
+#         username = input('Username: ')
+#         password = getpass.getpass()
+#         port = input('Port: ')
+#
+#         if os.path.isfile(args.destination):
+#             with open(args.destination, 'r') as f:
+#                 ip_addresses = f.read().split('\n')
+#                 print(ip_addresses)
+#         else:
+#             ip_addresses.append(args.destination)
+#
+#         result = [username_vpn, password_vpn,
+#                   args.vpn_gateway, username,
+#                   password, ip_addresses, port]
+#
+#         return (result)
 
-        if os.path.isfile(args.destination):
-            with open(args.destination, 'r') as f:
-                ip_addresses = f.read().split('\n')
-                print(ip_addresses)
-        else:
-            ip_addresses.append(args.destination)
 
-        result = [username, password, ip_addresses, port]   
+# Создаем парсер командной строки
+# parser = argparse.ArgumentParser(description='collect_data_from_devices')
+# parser.add_argument('-v', action='store',
+#                     dest='vpn_gateway',
+#                     default='notvpn')
+# parser.add_argument('-a', action='store', dest='destination', required=True)
+#
+# # Обработка переданных пользователем аргументов
+# args = parser.parse_args()
 
-        return (result)
+# сохраняем параметры для входа в отдельной переменной
+# parameters = auth(args)
 
-    else:
-        print('Целевые устройства находятся в VPN')
+# в исходной функции здесь возвращается список, по размеру которого ты выбираешь
+# какую функцию вызвать следующей.
+# Сейчас же форма вернула тебе словать. Здесь можно также по размеру словаря
+# делать дальнейший выбор
 
-        print('Введите учетные данные для авторизации на шлюзе VPN:')
-        username_vpn = input('Username: ')
-        password_vpn = getpass.getpass()
-
-        print('Введите учетные данные для авторизации на устройствах:')  
-        username = input('Username: ')
-        password = getpass.getpass()
-        port = input('Port: ')
-
-        if os.path.isfile(args.destination):
-            with open(args.destination, 'r') as f:
-                ip_addresses = f.read().split('\n')
-                print(ip_addresses)
-        else:   
-            ip_addresses.append(args.destination)
-
-        result = [username_vpn, password_vpn, 
-                  args.vpn_gateway, username, 
-                  password, ip_addresses, port]
-
-        return (result)
+# парсинг данных формы
+form = cgi.FieldStorage()
+parameters = [form['username'], form['password'], form['address'], form['port']]
+collect_data_from_devices(parameters)
 
 
-# Обработка переданных пользователем аргументов
-parser = argparse.ArgumentParser(description='collect_data_from_devices')
-parser.add_argument('-v', action='store', 
-                    dest='vpn_gateway', 
-                    default='notvpn')
-parser.add_argument('-a', action='store', dest='destination', required=True)
-args = parser.parse_args()
+# # в зависимости от количества аргументов вызывается определенная функция
+# if len(parameters) == 4:
+#     collect_data_from_devices(parameters)
+# else:
+#     collect_data_from_devices_vpn(parameters)
 
-parameters = auth(args)
-if len(parameters) == 4:
-    collect_data_from_devices(parameters)
-else:
-    collect_data_from_devices_vpn(parameters)
+
+
+# todo нужна ли эта инструкция?
+print('Content-type: text/html')
+
+# вывод страницы с информацией о завершении
+print(replyhtml)
