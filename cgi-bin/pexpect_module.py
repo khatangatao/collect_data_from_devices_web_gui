@@ -11,17 +11,24 @@ import datetime
 import argparse
 
 
+print('Content-type: text/html\n')
+
+print("""<!DOCTYPE HTML>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Сбор данных с устройств</title>
+        </head>
+        <body>""")
 
 
 # todo непонятная инструкция. разобраться
-sys.path.insert(0, os.getcwd())
+# sys.path.insert(0, os.getcwd())
 
 # Главный шаблон вывода
 replyhtml = """
-<html>
-<title>Collect data from devices</title>
-<body>
 <p> Процесс произошел. Надо проверять"</p>
+<p> Check language </p>
 </body></html>
 """
 
@@ -123,7 +130,14 @@ def mikrotik_connect(connection_id, username, password, address, port):
 
 def collect_data_from_devices(parameters):
     """Сбор данных с устройств, доступных напрямую"""
+
+    # в переменные попадает строка символов. В случае с IP адресом должен попасть список
     username, password, ip_addresses, port = parameters
+
+    print(ip_addresses)
+    print('<br>')
+    print('_' * 40 + '<br>')
+
     for address in ip_addresses:
         print('='*72)
         print('Подключаемся к устройству с IP адресом {} ...'.format(address))
@@ -273,7 +287,7 @@ def collect_data_from_devices_vpn(parameters):
 
 # парсинг данных формы
 form = cgi.FieldStorage()
-parameters = [form['username'], form['password'], form['address'], form['port']]
+parameters = [form['username'].value, form['password'].value, [form['address'].value], form['port'].value]
 collect_data_from_devices(parameters)
 
 
@@ -285,8 +299,6 @@ collect_data_from_devices(parameters)
 
 
 
-# todo нужна ли эта инструкция?
-print('Content-type: text/html')
 
 # вывод страницы с информацией о завершении
 print(replyhtml)
