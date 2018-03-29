@@ -7,10 +7,14 @@
 <body>
 <form method=POST action="cgi-bin/pexpect_module.py">
     <table>
-    <tr><th>IP address or filename:<td><input type=text name=address>
-    <tr><th>Username<td><input type=text name=username>
-    <tr><th>Password<td><input type=password name=password>
-    <tr><th>Port<td><input type=text name=port>
+        <tr><th>IP address or filename:<td><input type=text name=address>
+        <tr><th>Username<td><input type=text name=username>
+        <tr><th>Password<td><input type=password name=password>
+        <tr><th>Port<td><input type=text name=port>
+        <tr><th>VPN Options: <td>
+        <tr><th>IP address:<td><input type=text name=vpn_gateway>
+        <tr><th>Username<td><input type=text name=username_vpn>
+        <tr><th>Password<td><input type=password name=password_vpn>
     </table>
     <p>
     <input type=submit value="Collect" name=action>

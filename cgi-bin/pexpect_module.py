@@ -335,6 +335,13 @@ username = html.escape(form['username'].value)
 password = html.escape(form['password'].value)
 port = html.escape(form['port'].value)
 
+# сохраняем данные для подключения к VPN серверу
+vpn_gateway =html.escape(form['vpn_gateway'].value)
+username_vpn = html.escape(form['username_vpn'].value)
+password_vpn = html.escape(form['password_vpn'].value)
+
+# todo здесь вставить код, который будет проверять наличие VPN
+# todo и вызывать соответствующую функцию
 # готовим список из исходных данных для передачи в функцию
 parameters = [username, password, ip_addresses, port]
 
