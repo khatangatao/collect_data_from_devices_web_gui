@@ -10,12 +10,27 @@ import sqlite3
 import datetime
 import argparse
 import html
+import http.cookies
 
-# для целей тестирования создаем куки
-print("Set-cookie: name=value; expires=Wed May 18 03:33:20 2033; path=/cgi-bin/")
 
-# Выводим служебную информацию о странице и ее заголовок
-print('Content-type: text/html\n')
+# для целей тестирования
+# код проверяет, установлена ли кука с именем "name"
+# если ее нет - устанавливаем
+cookie = http.cookies.SimpleCookie(os.environ.get("HTTP_COOKIE"))
+name = cookie.get("name")
+if name is None:
+    print("Set-cookie: name=value")
+    print("Content-type: text/html\n")
+    print("Cookies!!!")
+else:
+    print("Content-type: text/html\n")
+    print("Cookies:")
+    print(name.value)
+
+
+
+
+# Выводим верхнюю часть страницы
 
 print("""<!DOCTYPE HTML>
         <html>
@@ -48,7 +63,7 @@ replyhtml = """
 
 
 def save_data_in_database(address, command_output, 
-                          database='mikrotik_database.db'):
+                          database='output/mikrotik_database.db'):
     """Функция составляет запрос к БД на основании полученной информации и 
     выполняет его. Сделана проверка существования БД
     """
@@ -169,7 +184,7 @@ def collect_data_from_devices(parameters):
             print('Ошибка EOF\n')
             continue
 
-        save_data_in_database(address, command_output)  
+        save_data_in_database(address, command_output)
 
 
 def collect_data_from_devices_vpn(parameters):
@@ -307,15 +322,22 @@ form = cgi.FieldStorage()
 # FieldStorage.getfirst(name, default=None) - всегда возвращает только одно значение, связанное с именем поля формы.
 # Метод возвращает только первое значение в том случае, если нехороший пользователь послал более одного значения.
 
-# экранируем спецсимволы, переданные пользователем
+# проверяем поле с адресом
+ip_addresses =html.escape(form['address'].value)
+if os.path.isfile(ip_addresses):
+    with open(ip_addresses, 'r') as f:
+        ip_addresses = f.read().split('\n')
+else:
+    ip_addresses = [ip_addresses]
+
+# сохраняем имя, пароль и порт
 username = html.escape(form['username'].value)
 password = html.escape(form['password'].value)
-ip_addresses =[html.escape(form['address'].value)]
 port = html.escape(form['port'].value)
 
-
+# готовим список из исходных данных для передачи в функцию
 parameters = [username, password, ip_addresses, port]
-# parameters = [form['username'].value, form['password'].value, [form['address'].value], form['port'].value]
+
 collect_data_from_devices(parameters)
 
 
@@ -324,7 +346,6 @@ collect_data_from_devices(parameters)
 #     collect_data_from_devices(parameters)
 # else:
 #     collect_data_from_devices_vpn(parameters)
-
 
 
 

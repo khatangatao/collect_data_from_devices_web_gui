@@ -2,4 +2,4 @@ mikrotik_database.db
 source/
 .idea/
 venv/
-cgi-bin/mikrotik_database.db
+output/mikrotik_database.db
