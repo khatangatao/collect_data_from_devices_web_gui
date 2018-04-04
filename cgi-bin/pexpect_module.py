@@ -264,6 +264,7 @@ else:
     ip_addresses = [ip_addresses]
 
 # сохраняем имя, пароль и порт
+#todo проверять содержимое полей на наличие данных
 username = html.escape(form['username'].value)
 password = html.escape(form['password'].value)
 port = html.escape(form['port'].value)
